@@ -3,27 +3,7 @@ import { NextResponse } from 'next/server'
 // EVE Frontier World API - live game data from nursery environment
 const EVE_WORLD_API = 'https://blockchain-gateway-nova.nursery.rnd.games'
 
-export interface EveType {
-  typeId: number
-  name: string
-  description?: string
-  groupId?: number
-  categoryId?: number
-  volume?: number
-  mass?: number
-}
-
-export interface EveSmartAssembly {
-  id: string
-  typeId: number
-  typeName?: string
-  ownerId?: string
-  solarSystemId?: number
-  isOnline?: boolean
-  assemblyType?: string
-}
-
-// Fetch killmails/recent activity from EVE Frontier World API
+// Fetch data from EVE Frontier World API
 async function fetchEveWorldData(path: string) {
   const url = `${EVE_WORLD_API}${path}`
   const res = await fetch(url, {
