@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv
+venv/
+*.egg-info/
+dist/
+.uv/
+
+# Node
+node_modules/
+.next/
+out/
+.env.local
+.env*.local
+npm-debug.log*
+
+# General
+.DS_Store
+*.log
+.vercel
