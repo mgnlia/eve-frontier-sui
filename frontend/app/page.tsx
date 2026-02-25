@@ -28,12 +28,11 @@ export default function Home() {
         {activeWallet && (
           <div className="mt-6 space-y-8">
             <FleetDashboard wallet={activeWallet} />
-            {/* EVE Frontier World API live data section */}
             <div>
               <h2 className="text-eve-text/50 text-xs font-bold tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-2 h-px bg-eve-border flex-1" />
+                <span className="flex-1 h-px bg-eve-border" />
                 EVE FRONTIER WORLD — LIVE GAME DATA
-                <span className="w-2 h-px bg-eve-border flex-1" />
+                <span className="flex-1 h-px bg-eve-border" />
               </h2>
               <EveWorldPanel />
             </div>
@@ -67,12 +66,11 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            {/* Show EVE World data even without wallet */}
             <div className="mt-12 text-left max-w-4xl mx-auto">
               <h2 className="text-eve-text/50 text-xs font-bold tracking-widest mb-3 flex items-center gap-2">
-                <span className="w-2 h-px bg-eve-border flex-1" />
+                <span className="flex-1 h-px bg-eve-border" />
                 EVE FRONTIER WORLD — LIVE GAME DATA
-                <span className="w-2 h-px bg-eve-border flex-1" />
+                <span className="flex-1 h-px bg-eve-border" />
               </h2>
               <EveWorldPanel />
             </div>
