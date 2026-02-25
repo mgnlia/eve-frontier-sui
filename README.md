@@ -1,110 +1,76 @@
 # EVE Frontier × Sui Fleet Analytics Dashboard
 
-> **EVE Frontier × Sui Hackathon 2026 Entry** — On-chain fleet analytics for EVE Frontier using the Sui blockchain.
+**Hackathon:** EVE Frontier × Sui Hackathon 2026  
+**Track:** External Analytics Dashboard  
+**Canonical Repo:** https://github.com/mgnlia/eve-frontier-sui
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?logo=vercel)](https://eve-frontier-sui.vercel.app)
-[![Backend](https://img.shields.io/badge/Backend-Railway-purple?logo=railway)](https://eve-frontier-sui-backend.up.railway.app)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+## ✅ Live Demo
 
-## Overview
-
-An external analytics dashboard that queries the **Sui Mainnet JSON-RPC** to provide real-time fleet intelligence for EVE Frontier players. No complex on-chain smart contracts needed — pure analytics power.
-
-### Features
-
-- 🔍 **Wallet Scanner** — Look up any Sui wallet address
-- 🚀 **Fleet Composition** — Ships, modules, resources categorized via heuristics
-- 📊 **Visual Analytics** — Pie charts, bar charts, area charts via Recharts
-- ⛓️ **Transaction History** — Full tx log with gas cost timeline
-- 🎨 **EVE-themed UI** — Dark sci-fi aesthetic with glow effects
+| Service | URL | Status |
+|---------|-----|--------|
+| **Frontend** | https://eve-frontier-sui.vercel.app | ✅ Live |
+| **API Health** | https://eve-frontier-sui.vercel.app/api/health | ✅ Live |
+| **Assets API** | https://eve-frontier-sui.vercel.app/api/assets/{wallet} | ✅ Live |
+| **Fleet API** | https://eve-frontier-sui.vercel.app/api/fleet/{wallet} | ✅ Live |
+| **Transactions API** | https://eve-frontier-sui.vercel.app/api/transactions/{wallet} | ✅ Live |
 
 ## Architecture
 
+**Single Next.js 14 app** deployed on Vercel handles both frontend UI and API:
+
 ```
-┌─────────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
-│   Next.js Frontend  │────▶│  FastAPI Backend      │────▶│  Sui Mainnet    │
-│   (Vercel)          │     │  (Railway)            │     │  JSON-RPC       │
-└─────────────────────┘     └──────────────────────┘     └─────────────────┘
+frontend/
+├── app/
+│   ├── page.tsx                    # Dashboard UI
+│   └── api/
+│       ├── health/route.ts         # Health check
+│       ├── sui-utils.ts            # Sui RPC helpers
+│       ├── assets/[wallet]/route.ts     # Wallet asset inventory
+│       ├── fleet/[wallet]/route.ts      # Fleet analytics breakdown
+│       └── transactions/[wallet]/route.ts # Transaction history
+└── components/                     # React dashboard components
 ```
+
+**Backend (Railway-deployable):** `backend/main.py` — FastAPI service, same Sui RPC logic.
+
+## Real Blockchain Data
+
+**No mock data.** All data is fetched live from **Sui Mainnet** via JSON-RPC:
+- `suix_getBalance` — SUI token balance
+- `suix_getOwnedObjects` — NFT/object inventory with display metadata
+- `suix_queryTransactionBlocks` — Transaction history with gas costs
+
+Endpoint: `https://fullnode.mainnet.sui.io`
+
+## Features
+
+- 🔍 **Wallet Lookup** — enter any Sui address (0x...)
+- 📊 **Fleet Analytics** — asset breakdown by category (Ships, Modules, Resources)
+- 📈 **Charts** — pie chart (category distribution) + bar chart (top asset types)
+- 💳 **Asset Table** — paginated object inventory with Sui Explorer links
+- 📉 **Transaction History** — gas cost area chart + recent tx list
+- ⚡ **Real-time** — live Sui mainnet data, no caching
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Next.js 14, React, TypeScript, Tailwind CSS |
-| Charts | Recharts |
-| Backend | Python, FastAPI, httpx |
-| Package Manager | uv (Python) |
-| Blockchain | Sui Mainnet JSON-RPC |
-| Frontend Deploy | Vercel |
-| Backend Deploy | Railway |
-
-## API Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /assets/{wallet}` | All Sui objects + SUI balance |
-| `GET /fleet/{wallet}` | Fleet analytics with category breakdown |
-| `GET /transactions/{wallet}` | Recent transaction history |
-| `GET /health` | Health check |
+- **Next.js 14** (App Router) + TypeScript + Tailwind CSS
+- **Recharts** for data visualizations
+- **Sui JSON-RPC API** — direct fetch calls to Sui mainnet
+- **Vercel** deployment (frontend + API routes)
+- **Python/FastAPI** (backend/, deployable to Railway)
 
 ## Local Development
-
-### Backend
-
-```bash
-cd backend
-pip install uv
-uv pip install --system fastapi uvicorn httpx pydantic python-dotenv
-uvicorn main:app --reload
-```
-
-### Frontend
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local
-# Edit .env.local with your backend URL
 npm run dev
+# Open http://localhost:3000
 ```
 
-## Deployment
+## Test Wallet
 
-### Backend → Railway
-
-```bash
-cd backend
-railway up
+Try any active Sui wallet. Example:
 ```
-
-### Frontend → Vercel
-
-```bash
-cd frontend
-vercel --prod
+0x0000000000000000000000000000000000000000000000000000000000000001
 ```
-
-## Environment Variables
-
-### Frontend (`.env.local`)
-```
-NEXT_PUBLIC_API_URL=https://your-backend.up.railway.app
-```
-
-### Backend
-```
-SUI_RPC_URL=https://fullnode.mainnet.sui.io  # default
-PORT=8000
-```
-
-## Hackathon
-
-- **Event**: EVE Frontier × Sui Hackathon 2026
-- **Track**: External Analytics Dashboard
-- **Prize Pool**: $80,000
-- **Deadline**: March 31, 2026
-
-## License
-
-MIT
