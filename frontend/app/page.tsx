@@ -5,6 +5,7 @@ import { WalletSearch } from '@/components/WalletSearch'
 import { FleetDashboard } from '@/components/FleetDashboard'
 import { Header } from '@/components/Header'
 import { HeroStats } from '@/components/HeroStats'
+import { EveWorldPanel } from '@/components/EveWorldPanel'
 
 export default function Home() {
   const [wallet, setWallet] = useState<string>('')
@@ -25,7 +26,18 @@ export default function Home() {
           onSearch={handleSearch}
         />
         {activeWallet && (
-          <FleetDashboard wallet={activeWallet} />
+          <div className="mt-6 space-y-8">
+            <FleetDashboard wallet={activeWallet} />
+            {/* EVE Frontier World API live data section */}
+            <div>
+              <h2 className="text-eve-text/50 text-xs font-bold tracking-widest mb-3 flex items-center gap-2">
+                <span className="w-2 h-px bg-eve-border flex-1" />
+                EVE FRONTIER WORLD — LIVE GAME DATA
+                <span className="w-2 h-px bg-eve-border flex-1" />
+              </h2>
+              <EveWorldPanel />
+            </div>
+          </div>
         )}
         {!activeWallet && (
           <div className="mt-16 text-center">
@@ -55,12 +67,21 @@ export default function Home() {
                 </div>
               ))}
             </div>
+            {/* Show EVE World data even without wallet */}
+            <div className="mt-12 text-left max-w-4xl mx-auto">
+              <h2 className="text-eve-text/50 text-xs font-bold tracking-widest mb-3 flex items-center gap-2">
+                <span className="w-2 h-px bg-eve-border flex-1" />
+                EVE FRONTIER WORLD — LIVE GAME DATA
+                <span className="w-2 h-px bg-eve-border flex-1" />
+              </h2>
+              <EveWorldPanel />
+            </div>
           </div>
         )}
       </div>
       <footer className="border-t border-eve-border mt-16 py-6 text-center text-xs text-eve-text/40">
         <p>EVE Frontier × Sui Fleet Analytics Dashboard • Built for EVE Frontier × Sui Hackathon 2026</p>
-        <p className="mt-1">Data sourced from Sui Mainnet JSON-RPC • Not affiliated with CCP Games</p>
+        <p className="mt-1">Sui data: Sui Mainnet JSON-RPC • Game data: EVE Frontier World API (nursery.rnd.games) • Not affiliated with CCP Games</p>
       </footer>
     </main>
   )

@@ -1,21 +1,14 @@
 'use client'
+
 import { useState, useEffect } from 'react'
+import axios from 'axios'
 import { FleetSummaryCards } from './FleetSummaryCards'
 import { CategoryChart } from './CategoryChart'
 import { AssetTypeChart } from './AssetTypeChart'
 import { AssetTable } from './AssetTable'
 import { TransactionHistory } from './TransactionHistory'
 
-interface Asset {
-  objectId: string
-  type: string
-  name: string
-  description: string
-  imageUrl: string
-  version: string
-  digest: string
-  category: string
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://eve-frontier-sui-backend.up.railway.app'
 
 interface FleetData {
   wallet: string
@@ -29,10 +22,10 @@ interface FleetData {
   }
   category_breakdown: Array<{ category: string; count: number }>
   top_asset_types: Array<{ type: string; count: number }>
-  ships: Asset[]
-  modules: Asset[]
-  resources: Asset[]
-  other: Asset[]
+  ships: any[]
+  modules: any[]
+  resources: any[]
+  other: any[]
 }
 
 type Tab = 'overview' | 'ships' | 'modules' | 'resources' | 'transactions'
@@ -44,44 +37,56 @@ export function FleetDashboard({ wallet }: { wallet: string }) {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
 
   useEffect(() => {
-    setLoading(true)
-    setError(null)
-    fetch(`/api/fleet/${wallet}`)
-      .then(r =>
-        r.ok
-          ? r.json()
-          : r.json().then((e: { error?: string }) =>
-              Promise.reject(e.error || `HTTP ${r.status}`)
-            )
-      )
-      .then(setData)
-      .catch((e: unknown) => setError(String(e)))
-      .finally(() => setLoading(false))
+    const fetchData = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await axios.get(`${API_URL}/fleet/${wallet}`, { timeout: 30000 })
+        setData(res.data)
+      } catch (err: any) {
+        setError(err.response?.data?.detail || err.message || 'Failed to fetch fleet data')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
   }, [wallet])
 
-  if (loading) return (
-    <div className="eve-panel p-8 text-center scanline">
-      <div className="text-eve-blue text-2xl mb-3 animate-pulse">◈</div>
-      <p className="text-eve-blue text-sm font-bold tracking-widest animate-pulse">SCANNING BLOCKCHAIN...</p>
-      <p className="text-eve-text/50 text-xs mt-2">Querying Sui Mainnet for {wallet.slice(0, 10)}...</p>
-      <div className="mt-4 flex justify-center gap-1">
-        {[0, 1, 2, 3, 4].map(i => (
-          <div key={i} className="w-1 h-4 bg-eve-blue/40 rounded animate-pulse" style={{ animationDelay: `${i * 0.15}s` }} />
-        ))}
+  if (loading) {
+    return (
+      <div className="eve-panel p-8 text-center scanline">
+        <div className="text-eve-blue text-2xl mb-3 animate-pulse">◈</div>
+        <p className="text-eve-blue text-sm font-bold tracking-widest animate-pulse">
+          SCANNING BLOCKCHAIN...
+        </p>
+        <p className="text-eve-text/50 text-xs mt-2">Querying Sui Mainnet for {wallet.slice(0, 10)}...</p>
+        <div className="mt-4 flex justify-center gap-1">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="w-1 h-4 bg-eve-blue/40 rounded animate-pulse"
+              style={{ animationDelay: `${i * 0.15}s` }}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
 
-  if (error) return (
-    <div className="eve-panel p-6">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-eve-red">⚠</span>
-        <span className="text-eve-red text-sm font-bold">SCAN FAILED</span>
+  if (error) {
+    return (
+      <div className="eve-panel p-6 border-eve-red/30">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-eve-red">⚠</span>
+          <span className="text-eve-red text-sm font-bold">SCAN FAILED</span>
+        </div>
+        <p className="text-eve-text text-sm">{error}</p>
+        <p className="text-eve-text/50 text-xs mt-2">
+          Ensure the wallet address is valid and the backend is reachable.
+        </p>
       </div>
-      <p className="text-eve-text text-sm">{error}</p>
-      <p className="text-eve-text/50 text-xs mt-2">Ensure the wallet address is a valid Sui address (0x...).</p>
-    </div>
-  )
+    )
+  }
 
   if (!data) return null
 
@@ -95,21 +100,29 @@ export function FleetDashboard({ wallet }: { wallet: string }) {
 
   return (
     <div className="space-y-6">
+      {/* Wallet info bar */}
       <div className="eve-panel px-4 py-3 flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-eve-green animate-pulse" />
-          <span className="text-eve-text text-xs font-mono">{wallet.slice(0, 6)}...{wallet.slice(-6)}</span>
+          <span className="text-eve-text text-xs font-mono">
+            {wallet.slice(0, 6)}...{wallet.slice(-6)}
+          </span>
         </div>
         <div className="flex items-center gap-4 text-xs">
-          <span className="text-eve-gold font-bold">{data.sui_balance.toFixed(4)} SUI</span>
-          <span className="text-eve-text/50">{data.fleet_summary.total_assets} assets</span>
+          <span className="text-eve-gold font-bold">
+            {data.sui_balance.toFixed(4)} SUI
+          </span>
+          <span className="text-eve-text/50">
+            {data.fleet_summary.total_assets} assets
+          </span>
         </div>
       </div>
 
       <FleetSummaryCards data={data} />
 
+      {/* Tab navigation */}
       <div className="flex gap-1 border-b border-eve-border">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -131,16 +144,29 @@ export function FleetDashboard({ wallet }: { wallet: string }) {
         ))}
       </div>
 
+      {/* Tab content */}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <CategoryChart data={data.category_breakdown} />
           <AssetTypeChart data={data.top_asset_types} />
         </div>
       )}
-      {activeTab === 'ships' && <AssetTable assets={data.ships} title="SHIPS" emptyMsg="No ships detected" />}
-      {activeTab === 'modules' && <AssetTable assets={data.modules} title="MODULES" emptyMsg="No modules detected" />}
-      {activeTab === 'resources' && <AssetTable assets={data.resources} title="RESOURCES" emptyMsg="No resources detected" />}
-      {activeTab === 'transactions' && <TransactionHistory wallet={wallet} />}
+
+      {activeTab === 'ships' && (
+        <AssetTable assets={data.ships} title="SHIPS" emptyMsg="No ships detected in this wallet" />
+      )}
+
+      {activeTab === 'modules' && (
+        <AssetTable assets={data.modules} title="MODULES" emptyMsg="No modules detected in this wallet" />
+      )}
+
+      {activeTab === 'resources' && (
+        <AssetTable assets={data.resources} title="RESOURCES" emptyMsg="No resources detected in this wallet" />
+      )}
+
+      {activeTab === 'transactions' && (
+        <TransactionHistory wallet={wallet} />
+      )}
     </div>
   )
 }
